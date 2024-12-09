@@ -1,0 +1,225 @@
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<!-- Place this in your head section -->
+<!-- Add this in your head section -->
+<script>
+    // Make db and auth globally available
+    window.db = null;
+    window.auth = null;
+
+    // Initialize Firebase immediately
+    const firebaseConfig = {
+        apiKey: "AIzaSyDYSsjkLfBbjF5PzDFZR1qsiv4tLsxXTvQ",
+        authDomain: "univi-41774.firebaseapp.com",
+        projectId: "univi-41774",
+        storageBucket: "univi-41774.firebasestorage.app",
+        messagingSenderId: "495241740015",
+        appId: "1:495241740015:web:513e352d9927b23b32e51a",
+        measurementId: "G-7C4HKVVS08"
+    };
+
+    // Initialize Firebase
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        // Initialize Firestore and Auth
+        window.db = firebase.firestore();
+        window.auth = firebase.auth();
+
+        // Enable offline persistence
+        window.db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.warn('Persistence failed: Multiple tabs open');
+                } else if (err.code == 'unimplemented') {
+                    console.warn('Persistence not supported by browser');
+                }
+            });
+
+        console.log('Firebase initialized successfully');
+    } catch (error) {
+        console.error('Firebase initialization error:', error);
+    }
+</script>
+<script>
+    // Single DOMContentLoaded event listener
+    document.addEventListener('DOMContentLoaded', async function () {
+        console.log('Document loaded, checking auth state...');
+
+        // Elements
+        const userNameEl = document.getElementById('userName');
+        const userEmailEl = document.getElementById('userEmail');
+        const joinDateEl = document.getElementById('joinDate');
+        const currentTargetEl = document.getElementById('currentTarget');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const editModal = document.getElementById('editModal');
+        const editTargetBtn = document.getElementById('editTargetBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const saveTargetBtn = document.getElementById('saveTargetBtn');
+        const activityDiv = document.getElementById('recentActivity');
+
+        // Helper functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+        }
+
+        function openModal() {
+            editModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            editModal.classList.add('hidden');
+            document.getElementById('targetUniversityInput').value = '';
+        }
+
+        // Modal event listeners
+        editTargetBtn?.addEventListener('click', openModal);
+        closeModalBtn?.addEventListener('click', closeModal);
+        cancelEditBtn?.addEventListener('click', closeModal);
+
+        // Close modal on outside click and ESC key
+        editModal?.addEventListener('click', (e) => {
+            if (e.target === editModal) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !editModal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // Activity loading function
+        async function loadRecentActivity(userId) {
+            try {
+                const activityRef = window.db.collection('users').doc(userId).collection('activity')
+                    .orderBy('timestamp', 'desc')
+                    .limit(5);
+
+                const snapshot = await activityRef.get();
+
+                if (snapshot.empty) {
+                    activityDiv.innerHTML = '<p class="text-gray-500">No recent activity</p>';
+                    return;
+                }
+
+                activityDiv.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const activity = doc.data();
+                    const date = activity.timestamp ? new Date(activity.timestamp.seconds * 1000) : new Date();
+
+                    activityDiv.innerHTML += `
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-blue-600">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </div>
+                                <span class="text-gray-700">${activity.description}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">${date.toLocaleDateString()}</span>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading activity:', error);
+                activityDiv.innerHTML = '<p class="text-gray-500">Error loading activity</p>';
+            }
+        }
+
+        // Save target university event listener
+        saveTargetBtn?.addEventListener('click', async () => {
+            const user = window.auth.currentUser;
+            if (!user) return;
+
+            const targetUniversity = document.getElementById('targetUniversityInput').value.trim();
+            if (!targetUniversity) {
+                alert('Please enter a university name');
+                return;
+            }
+
+            try {
+                await window.db.collection('users').doc(user.uid).update({
+                    targetUniversity: targetUniversity
+                });
+
+                await window.db.collection('users').doc(user.uid).collection('activity').add({
+                    description: `Updated target university to ${targetUniversity}`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                currentTargetEl.textContent = targetUniversity;
+                closeModal();
+                await loadRecentActivity(user.uid);
+            } catch (error) {
+                console.error('Error updating target university:', error);
+                alert('Error saving target university. Please try again.');
+            }
+        });
+
+        // Main auth state observer
+        window.auth?.onAuthStateChanged(async (user) => {
+            console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'No user');
+
+            if (!user) {
+                console.log('No user, redirecting to login...');
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const userRef = window.db.collection('users').doc(user.uid);
+                let userDoc = await userRef.get();
+
+                if (!userDoc.exists) {
+                    console.log('Creating new user document...');
+                    await userRef.set({
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0] || 'User',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    userDoc = await userRef.get();
+                }
+
+                const userData = userDoc.data();
+                console.log('User data loaded:', userData);
+
+                // Update UI
+                userNameEl.textContent = userData.name || user.displayName || 'User';
+                userEmailEl.textContent = userData.email || user.email;
+
+                if (userData.createdAt) {
+                    const joinDate = new Date(userData.createdAt.seconds * 1000);
+                    joinDateEl.textContent = `Joined ${joinDate.toLocaleDateString()}`;
+                }
+
+                currentTargetEl.textContent = userData.targetUniversity || 'No target university set';
+
+                if (userData.quizResults) {
+                    document.getElementById('noResults').style.display = 'none';
+                    document.getElementById('quizResults').innerHTML = `
+                        <div class="text-lg font-medium text-gray-900 mb-2">Latest Results:</div>
+                        <p class="text-gray-600">${userData.quizResults}</p>
+                    `;
+                }
+
+                if (userData.gpa) {
+                    document.getElementById('currentGPA').textContent = `Current GPA: ${userData.gpa}`;
+                }
+
+                await loadRecentActivity(user.uid);
+                errorAlert.classList.add('hidden');
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Error loading user data: ' + error.message);
+            }
+        });
+    });
+</script>

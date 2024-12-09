@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIVI AI - Your AI-Powered University Guide</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <link href="univilogo2.png" rel="icon">
+    {% include 'partials/firebaseconfig.html' %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        universitytext {
+            background: linear-gradient(to right,
+                    #ffffff 0%,
+                    #80a5eb 50%,
+                    #6e9aed 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            background-size: 500% auto;
+            animation: textShine 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textShine {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/api/placeholder/1920/1080') center/cover;
+            opacity: 0.15;
+            mix-blend-mode: soft-light;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.2) 2%, transparent 0%),
+                radial-gradient(circle at 75px 75px, rgba(255, 255, 255, 0.2) 2%, transparent 0%);
+            background-size: 100px 100px;
+            opacity: 0.3;
+        }
+
+        .feature-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-color: #3b82f6;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .cta-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+        }
+
+        .step-card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        #uni_searcher {
+            border: rgb(49, 49, 49) 2px solid;
+            border-radius: 15px;
+            outline: none;
+            max-width: 170px;
+            padding-left: 15px;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .top-1 {
+            top: 50%;
+        }
+
+        .right-3 {
+            right: 0.75rem;
+        }
+
+        .transform {
+            transform: translateY(-50%);
+        }
+
+        .border-2 {
+            border-width: 2px;
+        }
+
+        .border-gray-400 {
+            --tw-border-opacity: 1;
+            border-color: rgb(156 163 175 / var(--tw-border-opacity));
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .pr-8 {
+            padding-right: 2rem;
+        }
+
+        .focus\:outline-none:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .focus\:border-blue-500:focus {
+            --tw-border-opacity: 1;
+            border-color: rgb(59 130 246 / var(--tw-border-opacity));
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity));
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    {% include 'partials/navigation.html' %}
+
+    <!-- Hero Section -->
+    <div class="hero-gradient text-white pt-32">
+        <div class="hero-pattern"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+            <div class="text-center relative z-10">
+                <div class="inline-block px-6 py-2 rounded-full bg-blue-500 bg-opacity-20 backdrop-blur-sm mb-6">
+                    <span class="text-blue-200 font-semibold">AI-POWERED UNIVERSITY MATCHING</span>
+                </div>
+                <h1 class="text-6xl md:text-8xl font-bold mb-8 leading-tight">
+                    Find Your Perfect<br />
+                    <universitytext>University Match</universitytext>
+                </h1>
+                <p class="text-xl md:text-2xl mb-12 text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                    Get personalized university recommendations based on your unique profile, interests, and career
+                    goals
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-6 sm:space-y-0 sm:space-x-8">
+                    <a href="/unichooser"
+                        class="cta-button bg-white text-blue-600 px-10 py-5 rounded-xl font-semibold shadow-xl hover:bg-gray-50 flex items-center justify-center text-lg">
+                        Get Your Matches
+                        <svg class="h-6 w-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                    <a href="/gpa-calculator"
+                        class="cta-button bg-blue-500 text-white px-10 py-5 rounded-xl font-semibold shadow-xl hover:bg-blue-600 flex items-center justify-center text-lg">
+                        Calculate Your GPA
+                        <svg class="h-6 w-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <svg class="wave-divider" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" fill="#f9fafb">
+            <path
+                d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z">
+            </path>
+        </svg>
+    </div>
+    <!-- Features Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div class="text-center mb-20">
+            <div class="inline-block px-6 py-2 rounded-full bg-blue-100 mb-4">
+                <span class="text-blue-600 font-semibold">WHY CHOOSE UNIVI</span>
+            </div>
+            <h2 class="text-5xl font-bold text-gray-900 mt-4">Everything You Need to<br />Make the Right Choice</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <!-- Personalized Recommendations -->
+            <div class="feature-card p-10 rounded-3xl">
+                <div
+                    class="h-16 w-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-8 transform transition-transform group-hover:rotate-6">
+                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Smart Matching</h3>
+                <p class="text-gray-600 leading-relaxed text-lg">Get tailored university suggestions based on your
+                    academic profile, interests, and career aspirations</p>
+            </div>
+
+            <!-- AI Advisor -->
+            <div class="feature-card p-10 rounded-3xl">
+                <div class="h-16 w-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-8">
+                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">AI Guidance</h3>
+                <p class="text-gray-600 leading-relaxed text-lg">Get instant answers about universities, programs, and
+                    admission requirements from our AI advisor</p>
+            </div>
+
+            <!-- Career Planning -->
+            <div class="feature-card p-10 rounded-3xl">
+                <div class="h-16 w-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-8">
+                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Career Planning</h3>
+                <p class="text-gray-600 leading-relaxed text-lg">Discover your ideal career path and get matched with
+                    universities that align with your professional goals</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="bg-gray-100 py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <div class="inline-block px-6 py-2 rounded-full bg-blue-100 mb-4">
+                    <span class="text-blue-600 font-semibold">THE PROCESS</span>
+                </div>
+                <h2 class="text-5xl font-bold text-gray-900 mt-4">Four Simple Steps to Success</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Steps Section Continued -->
+                <div class="step-card p-8 rounded-3xl group hover:shadow-xl">
+                    <div
+                        class="step-number h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-8 text-white font-bold text-2xl">
+                        1</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 text-center">Share Your Profile</h3>
+                    <p class="text-gray-600 text-lg text-center leading-relaxed">Tell us about your academic background
+                        and aspirations</p>
+                </div>
+                <div class="step-card p-8 rounded-3xl group hover:shadow-xl">
+                    <div
+                        class="step-number h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-8 text-white font-bold text-2xl">
+                        2</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 text-center">Get Matched</h3>
+                    <p class="text-gray-600 text-lg text-center leading-relaxed">Receive personalized university
+                        recommendations</p>
+                </div>
+                <div class="step-card p-8 rounded-3xl group hover:shadow-xl">
+                    <div
+                        class="step-number h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-8 text-white font-bold text-2xl">
+                        3</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 text-center">Explore Options</h3>
+                    <p class="text-gray-600 text-lg text-center leading-relaxed">Compare universities and programs in
+                        detail</p>
+                </div>
+                <div class="step-card p-8 rounded-3xl group hover:shadow-xl">
+                    <div
+                        class="step-number h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-8 text-white font-bold text-2xl">
+                        4</div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900 text-center">Get Support</h3>
+                    <p class="text-gray-600 text-lg text-center leading-relaxed">Chat with our AI advisor for guidance
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-white py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-16 text-center text-white relative overflow-hidden">
+                <div class="hero-pattern absolute inset-0 opacity-10"></div>
+                <div class="relative z-10">
+                    <h2 class="text-5xl font-bold mb-8">Ready to Find Your Perfect University?</h2>
+                    <p class="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">Take the first step towards your academic
+                        future. Get personalized recommendations today.</p>
+                    <a href="/unichooser"
+                        class="cta-button inline-flex items-center bg-white text-blue-600 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-blue-50">
+                        Start Your Journey
+                        <svg class="h-6 w-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleMobileMenu() {
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const menuIcon = menuBtn.querySelector('svg path');
+
+            // Add click event listener to menu button
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', () => {
+                    // Toggle the 'hidden' class on mobile menu
+                    mobileMenu.classList.toggle('hidden');
+
+                    // Update the menu icon (optional - if you want to change the icon)
+                    if (mobileMenu.classList.contains('hidden')) {
+                        menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16'); // Hamburger icon
+                    } else {
+                        menuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12'); // X icon
+                    }
+                });
+            }
+        }
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) { // 768px is the md breakpoint in Tailwind
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    if (menuIcon) {
+                        menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('uni_searcher');
+            const searchIcon = searchInput.nextElementSibling;
+
+            function performSearch() {
+                const universityName = searchInput.value.trim();
+                if (!universityName) return;
+
+                const formData = new FormData();
+                formData.append('university_name', universityName);
+                formData.append('country', 'global');
+
+                fetch('/search_university', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        alert('Could not find university. Please try another search.');
+                        return;
+                    }
+                    
+                    const modalHtml = `
+                        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 p-4 overflow-y-auto" id="searchModal">
+                            <div class="bg-white rounded-lg max-w-2xl w-full mt-20 mx-auto relative">
+                                <!-- Header - fixed at top -->
+                                <div class="sticky top-0 bg-white p-6 border-b border-gray-200 rounded-t-lg">
+                                    <div class="flex justify-between items-center">
+                                        <h2 class="text-2xl font-bold text-gray-900">${data.universityName || 'University Details'}</h2>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" id="closeSearchModal">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Scrollable content -->
+                                <div class="p-6 overflow-y-auto" style="max-height: calc(80vh - 100px);">
+                                    ${data.imageUrl ? `
+                                        <div class="mb-6">
+                                            <img src="${data.imageUrl}" alt="${data.universityName}" 
+                                                class="w-full h-48 object-cover rounded-lg shadow-md">
+                                        </div>
+                                    ` : ''}
+
+                                    <div class="space-y-6">
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Description</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.description || 'No description available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Notable Programs</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.notablePrograms || 'Information not available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Campus Life</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.campusLife || 'Information not available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Admission Requirements</h3>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">General Requirements</h4>
+                                                    <p class="text-gray-700 leading-relaxed">
+                                                        ${data.admissionRequirements.general || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">GPA Requirement</h4>
+                                                    <p class="text-gray-700">
+                                                        ${data.admissionRequirements.gpa || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">English Language Requirements</h4>
+                                                    <p class="text-gray-700">
+                                                        IELTS: ${data.admissionRequirements.englishRequirements.ielts || 'Information not available'}
+                                                    </p>
+                                                    <p class="text-gray-700 text-sm mt-1">
+                                                        ${data.admissionRequirements.englishRequirements.notes || ''}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">Required Documents</h4>
+                                                    <p class="text-gray-700">
+                                                        ${data.admissionRequirements.documents || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Research Opportunities</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.researchOpportunities || 'Information not available'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Remove existing modal if it exists
+                    const existingModal = document.getElementById('searchModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Add new modal
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                    // Add scroll styling
+                    document.body.style.overflow = 'hidden';
+
+                    // Add event listeners
+                    const modal = document.getElementById('searchModal');
+                    const closeButton = document.getElementById('closeSearchModal');
+
+                    function closeModal() {
+                        modal.remove();
+                        document.body.style.overflow = '';
+                    }
+
+                    closeButton.addEventListener('click', closeModal);
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            closeModal();
+                        }
+                    });
+
+                    // Prevent closing when clicking inside modal content
+                    modal.querySelector('.bg-white').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error searching for university. Please try again.');
+                });
+            }
+
+            // Add event listeners
+            searchIcon.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIVI AI - Register</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-card fixed w-full top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-3">
+                        <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v7" />
+                        </svg>
+                        <span
+                            class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">UNIVI
+                            AI</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Registration Form -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Already have an account?
+                    <a href="/login" class="font-medium text-blue-600 hover:text-blue-500">Sign in</a>
+                </p>
+            </div>
+            <form class="mt-8 space-y-6" id="registerForm">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="name" class="sr-only">Full Name</label>
+                        <input id="name" name="name" type="text" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Full Name">
+                    </div>
+                    <div>
+                        <label for="email" class="sr-only">Email address</label>
+                        <input id="email" name="email" type="email" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Email address">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Password">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+            <div id="error-message" class="mt-2 text-center text-sm text-red-600 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYSsjkLfBbjF5PzDFZR1qsiv4tLsxXTvQ",
+            authDomain: "univi-41774.firebaseapp.com",
+            projectId: "univi-41774",
+            storageBucket: "univi-41774.firebasestorage.app",
+            messagingSenderId: "495241740015",
+            appId: "1:495241740015:web:513e352d9927b23b32e51a",
+            measurementId: "G-7C4HKVVS08"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Handle registration form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDisplay = document.getElementById('error-message');
+
+            try {
+                // Create user account
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+
+                // Create user profile in Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    targetUniversity: '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                window.location.href = '/user'; // Redirect to user profile page
+            } catch (error) {
+                errorDisplay.textContent = error.message;
+                errorDisplay.classList.remove('hidden');
+            }
+        });
+
+        // Check auth state
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = '/user';
+            }
+        });
+        db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    // Multiple tabs open, persistence can only be enabled in one tab at a time
+                    console.log('Persistence failed: Multiple tabs open');
+                } else if (err.code == 'unimplemented') {
+                    // The current browser doesn't support persistence
+                    console.log('Persistence not supported by browser');
+                }
+            });
+
+        // Add error handling for auth state changes
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is signed in');
+            } else {
+                console.log('User is signed out');
+                // Only redirect if we're on a protected page
+                if (window.location.pathname === '/user') {
+                    window.location.href = '/login';
+                }
+            }
+        }, (error) => {
+            console.error('Auth state change error:', error);
+        });
+    </script>
+</body>
+
+</html>

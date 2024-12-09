@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Career Path: {{ profession }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    {% include 'partials/firebaseconfig.html' %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .skill-tag {
+            transition: all 0.2s ease;
+        }
+
+        .skill-tag:hover {
+            transform: scale(1.05);
+        }
+
+        .book-card {
+            transition: all 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+        }
+
+        .education-card {
+            transition: all 0.3s ease;
+        }
+
+        .education-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+        }
+
+        #uni_searcher {
+            border: rgb(49, 49, 49) 2px solid;
+            border-radius: 15px;
+            outline: none;
+            max-width: 170px;
+            padding-left: 15px;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .top-1 {
+            top: 50%;
+        }
+
+        .right-3 {
+            right: 0.75rem;
+        }
+
+        .transform {
+            transform: translateY(-50%);
+        }
+
+        .border-2 {
+            border-width: 2px;
+        }
+
+        .border-gray-400 {
+            --tw-border-opacity: 1;
+            border-color: rgb(156 163 175 / var(--tw-border-opacity));
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .pr-8 {
+            padding-right: 2rem;
+        }
+
+        .focus\:outline-none:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .focus\:border-blue-500:focus {
+            --tw-border-opacity: 1;
+            border-color: rgb(59 130 246 / var(--tw-border-opacity));
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity));
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'partials/navigation.html' %}
+
+    <div class="min-h-screen pt-20 pb-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <br>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Career Path: {{ profession }}</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">{{ analysis.career_path.description }}</p>
+            </div>
+
+            <!-- Career Overview Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-4">Career Overview</h2>
+                <div class="prose max-w-none">
+                    <p class="text-gray-700 mb-4">{{ analysis.career_path.description }}</p>
+                    <h3 class="text-xl font-semibold mb-2">Future Prospects</h3>
+                    <p class="text-gray-700">{{ analysis.career_path.future_prospects }}</p>
+                </div>
+            </div>
+
+            <!-- Skills Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                {% for skill_group in analysis.required_skills %}
+                <div class="card bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4">{{ skill_group.category }}</h3>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for skill in skill_group.skills %}
+                        <span class="skill-tag bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {{ skill }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    <p class="text-gray-600">{{ skill_group.importance }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Reading List -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6">Recommended Reading</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for book in analysis.recommended_books %}
+                    <div class="book-card bg-white rounded-lg border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ book.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-4">by {{ book.author }}</p>
+                        <p class="text-gray-700 mb-4">{{ book.description }}</p>
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-900">Key Takeaways:</h4>
+                            <ul class="space-y-1">
+                                {% for takeaway in book.key_takeaways %}
+                                <li class="text-sm text-gray-600 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    {{ takeaway }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Education Path -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="education-card bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4">Educational Requirements</h3>
+                    <p class="text-gray-700 mb-4">{{ analysis.education_path.degree_requirements }}</p>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-lg font-medium mb-2">Relevant Fields</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for field in analysis.education_path.relevant_fields %}
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ field }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium mb-2">Specializations</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for spec in analysis.education_path.specializations %}
+                                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ spec }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="education-card bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4">University Programs</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-lg font-medium mb-2">Recommended Programs</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for program in analysis.university_criteria.recommended_programs %}
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ program }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium mb-2">Key Courses</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for course in analysis.university_criteria.key_courses %}
+                                <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ course }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Find Universities Button -->
+            <div class="text-center">
+                <form action="{{ url_for('find_universities') }}" method="POST">
+                    <button type="submit"
+                        class="gradient-bg text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                        Find Universities Matching Your Career Path
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+<!-- Navigation -->
+<nav class="bg-white fixed w-full top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+            <div class="flex items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 14l9-5-9-5-9 5 9 5z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v7" />
+                    </svg>
+                    <span
+                        class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">UNIVI
+                        AI</span>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-8">
+                <div class="relative">
+                    <input type="text" id="uni_searcher" placeholder="Search"
+                        class="border-2 border-gray-400 rounded-full py-2 px-4 pr-8 focus:outline-none focus:border-blue-500">
+                    <button type="submit" class="absolute top-1/2 right-3 transform -translate-y-1/2" id="searchButton">
+                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <a href="/unichooser" class="nav-link text-gray-700 hover:text-blue-600 font-medium text-lg">Find
+                    Universities</a>
+                <a href="/advisor" class="nav-link text-gray-700 hover:text-blue-600 font-medium text-lg">AI Advisor</a>
+                <a href="/career-advisor" class="nav-link text-gray-700 hover:text-blue-600 font-medium text-lg">Career
+                    Path</a>
+                <a href="/gpa-calculator" class="nav-link text-gray-700 hover:text-blue-600 font-medium text-lg">GPA
+                    Calculator</a>
+
+                <!-- Auth Buttons -->
+                <div id="authButtons" class="flex items-center space-x-4">
+                    <a href="/user" id="userProfileBtn"
+                        class="hidden flex items-center space-x-2 text-gray-700 hover:text-blue-600">
+                        <svg class="h-8 w-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium" id="navUserName">User</span>
+                    </a>
+                    <a href="/login" id="loginBtn"
+                        class="nav-link text-gray-700 hover:text-blue-600 font-medium text-lg">Sign In</a>
+                    <a href="/register" id="registerBtn"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign
+                        Up</a>
+                    <button id="logoutBtn"
+                        class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="menuBtn" class="text-gray-500 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="hidden md:hidden pb-4">
+            <div class="flex flex-col space-y-4">
+                <a href="/unichooser" class="text-gray-700 hover:text-blue-600 font-medium">Find Universities</a>
+                <a href="/advisor" class="text-gray-700 hover:text-blue-600 font-medium">AI Advisor</a>
+                <a href="/career-advisor" class="text-gray-700 hover:text-blue-600 font-medium">Career Path</a>
+                <a href="/gpa-calculator" class="text-gray-700 hover:text-blue-600 font-medium">GPA Calculator</a>
+                <a href="/user" id="mobileUserProfileBtn"
+                    class="hidden text-gray-700 hover:text-blue-600 font-medium">Profile</a>
+                <a href="/login" id="mobileLoginBtn" class="text-gray-700 hover:text-blue-600 font-medium">Sign In</a>
+                <a href="/register" id="mobileRegisterBtn" class="text-gray-700 hover:text-blue-600 font-medium">Sign
+                    Up</a>
+                <button id="mobileLogoutBtn"
+                    class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Auth state observer for navigation
+    firebase.auth().onAuthStateChanged((user) => {
+        const authElements = {
+            desktop: {
+                profile: document.getElementById('userProfileBtn'),
+                login: document.getElementById('loginBtn'),
+                register: document.getElementById('registerBtn'),
+                logout: document.getElementById('logoutBtn')
+            },
+            mobile: {
+                profile: document.getElementById('mobileUserProfileBtn'),
+                login: document.getElementById('mobileLoginBtn'),
+                register: document.getElementById('mobileRegisterBtn'),
+                logout: document.getElementById('mobileLogoutBtn')
+            }
+        };
+
+        if (user) {
+            // User is signed in
+            ['desktop', 'mobile'].forEach(type => {
+                authElements[type].profile.classList.remove('hidden');
+                authElements[type].logout.classList.remove('hidden');
+                authElements[type].login.classList.add('hidden');
+                authElements[type].register.classList.add('hidden');
+            });
+
+            // Update profile name in navigation
+            const navUserName = document.getElementById('navUserName');
+            db.collection('users').doc(user.uid).get().then((doc) => {
+                if (doc.exists) {
+                    navUserName.textContent = doc.data().name || 'User';
+                }
+            });
+        } else {
+            // User is signed out
+            ['desktop', 'mobile'].forEach(type => {
+                authElements[type].profile.classList.add('hidden');
+                authElements[type].logout.classList.add('hidden');
+                authElements[type].login.classList.remove('hidden');
+                authElements[type].register.classList.remove('hidden');
+            });
+        }
+    });
+
+    // Mobile menu toggle
+    // Get the menu button and mobile menu elements
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuIcon = menuBtn.querySelector('svg path');
+
+    // Add click event listener to menu button
+    if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => {
+            // Toggle the 'hidden' class on mobile menu
+            mobileMenu.classList.toggle('hidden');
+
+            // Update the menu icon (optional - if you want to change the icon)
+            if (mobileMenu.classList.contains('hidden')) {
+                menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16'); // Hamburger icon
+            } else {
+                menuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12'); // X icon
+            }
+        });
+    }
+
+    // Close mobile menu when window is resized to desktop view
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) { // 768px is the md breakpoint in Tailwind
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+                if (menuIcon) {
+                    menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                }
+            }
+        }
+    });
+
+    // Handle logout
+    function handleLogout() {
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        firebase.auth().signOut().then(() => {
+            window.location.href = '/advisor';
+        }).catch((error) => {
+            console.error('Error signing out:', error);
+        });
+    }
+
+    // Add logout handlers
+    document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+    document.getElementById('mobileLogoutBtn')?.addEventListener('click', handleLogout);
+</script>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIVI AI - Login</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-card fixed w-full top-0 z-50 shadow-sm bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-3">
+                        <svg class="h-10 w-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v7" />
+                        </svg>
+                        <span
+                            class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">UNIVI
+                            AI</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Form -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Login to your account</h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Or
+                    <a href="/register" class="font-medium text-blue-600 hover:text-blue-500">create a new account</a>
+                </p>
+            </div>
+            <form class="mt-8 space-y-6" id="loginForm">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email" class="sr-only">Email address</label>
+                        <input id="email" name="email" type="email" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Email address">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Password">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Login
+                    </button>
+                </div>
+            </form>
+            <div id="error-message" class="mt-2 text-center text-sm text-red-600 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYSsjkLfBbjF5PzDFZR1qsiv4tLsxXTvQ",
+            authDomain: "univi-41774.firebaseapp.com",
+            projectId: "univi-41774",
+            storageBucket: "univi-41774.firebasestorage.app",
+            messagingSenderId: "495241740015",
+            appId: "1:495241740015:web:513e352d9927b23b32e51a",
+            measurementId: "G-7C4HKVVS08"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        let lastAuthAttempt = 0;
+        const AUTH_COOLDOWN = 1000; // 1 секунда между попытками
+
+        // Check if user is already logged in
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // Get the redirect URL from query parameter or default to user profile
+                const urlParams = new URLSearchParams(window.location.search);
+                const nextUrl = urlParams.get('next') || '/user';
+                window.location.href = nextUrl;
+            }
+        });
+
+        // Handle login form submission
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Проверяем время с последней попытки
+            const now = Date.now();
+            if (now - lastAuthAttempt < AUTH_COOLDOWN) {
+                return;
+            }
+            lastAuthAttempt = now;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDisplay = document.getElementById('error-message');
+
+            try {
+                // Sign in with Firebase
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                if (user) {
+                    // Получаем ID токен
+                    const idToken = await user.getIdToken();
+
+                    // Устанавливаем куки
+                    document.cookie = `auth_token=${idToken}; path=/; max-age=3600; SameSite=Strict`;
+
+                    // Перенаправляем на страницу пользователя
+                    window.location.href = '/user';
+                }
+            } catch (error) {
+                errorDisplay.textContent = error.message;
+                errorDisplay.classList.remove('hidden');
+            }
+        });
+        db.enablePersistence()
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    // Multiple tabs open, persistence can only be enabled in one tab at a time
+                    console.log('Persistence failed: Multiple tabs open');
+                } else if (err.code == 'unimplemented') {
+                    // The current browser doesn't support persistence
+                    console.log('Persistence not supported by browser');
+                }
+            });
+
+        // Add error handling for auth state changes
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is signed in');
+            } else {
+                console.log('User is signed out');
+                // Only redirect if we're on a protected page
+                if (window.location.pathname === '/user') {
+                    window.location.href = '/login';
+                }
+            }
+        }, (error) => {
+            console.error('Auth state change error:', error);
+        });
+    </script>
+</body>
+
+</html>

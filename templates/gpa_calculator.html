@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    {% include 'partials/firebaseconfig.html' %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            margin-top: 200px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1.gpa-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: bold;
+            /* Добавляем !important для переопределения стилей Tailwind */
+            margin-top: 2rem !important;
+        }
+
+        .grading-system {
+            margin-bottom: 30px;
+        }
+
+        .grading-system button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #f0f0f0;
+            transition: all 0.3s;
+        }
+
+        .grading-system button.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .subject-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .subject-row input,
+        .subject-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .subject-name {
+            flex-grow: 1;
+        }
+
+        .credits {
+            width: 80px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .delete-btn:hover {
+            color: #bd2130;
+        }
+
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn,
+        .calculate-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .add-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .calculate-btn {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .calculate-btn:hover {
+            background: #357abd;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f4ff;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.visible {
+            display: block;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffe8e8;
+            color: #dc3545;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .subject-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .subject-row input,
+            .subject-row select {
+                width: 100%;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        #uni_searcher {
+            border: rgb(49, 49, 49) 2px solid;
+            border-radius: 15px;
+            outline: none;
+            max-width: 170px;
+            padding-left: 15px;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .top-1 {
+            top: 50%;
+        }
+
+        .right-3 {
+            right: 0.75rem;
+        }
+
+        .transform {
+            transform: translateY(-50%);
+        }
+
+        .border-2 {
+            border-width: 2px;
+        }
+
+        .border-gray-400 {
+            --tw-border-opacity: 1;
+            border-color: rgb(156 163 175 / var(--tw-border-opacity));
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .pr-8 {
+            padding-right: 2rem;
+        }
+
+        .focus\:outline-none:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .focus\:border-blue-500:focus {
+            --tw-border-opacity: 1;
+            border-color: rgb(59 130 246 / var(--tw-border-opacity));
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity));
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    {% include 'partials/navigation.html' %}
+    <div class="container">
+        <h1 class="gpa-title">GPA Calculator</h1>
+
+        <div class="grading-system">
+            <p>Select Grading System</p>
+            <div class="buttons">
+                <button class="active" data-system="letter">Letter Grades (A-F)</button>
+                <button data-system="numeric">Numeric Grades (2-5)</button>
+            </div>
+        </div>
+
+        <div id="subjects-container"></div>
+
+        <div class="actions">
+            <button class="add-btn">+ Add Subject</button>
+            <button class="calculate-btn">Calculate GPA</button>
+        </div>
+
+        <div class="result">
+            <h3>Your GPA: <span class="gpa-value"></span></h3>
+        </div>
+
+        <div class="error"></div>
+    </div>
+
+    <script>
+        class GPACalculator {
+            constructor() {
+                this.subjects = [];
+                this.currentId = 0;
+                this.gradePoints = {
+                    'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+                    'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+                    'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+                    'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+                    'F': 0.0
+                };
+                this.gradingSystem = 'letter';
+                this.init();
+            }
+
+            init() {
+                this.container = document.getElementById('subjects-container');
+                this.resultDiv = document.querySelector('.result');
+                this.errorDiv = document.querySelector('.error');
+                this.gpaValue = document.querySelector('.gpa-value');
+
+                // Add initial subject
+                this.addSubject();
+
+                // Event listeners
+                document.querySelector('.add-btn').addEventListener('click', () => this.addSubject());
+                document.querySelector('.calculate-btn').addEventListener('click', () => this.calculateGPA());
+
+                // Grading system buttons
+                document.querySelectorAll('.grading-system button').forEach(button => {
+                    button.addEventListener('click', (e) => this.changeGradingSystem(e));
+                });
+            }
+
+            createSubjectRow() {
+                const id = ++this.currentId;
+                const row = document.createElement('div');
+                row.className = 'subject-row';
+                row.dataset.id = id;
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'subject-name';
+                nameInput.placeholder = 'Subject Name';
+
+                const gradeSelect = document.createElement('select');
+                gradeSelect.className = 'grade';
+                this.updateGradeOptions(gradeSelect);
+
+                const creditsInput = document.createElement('input');
+                creditsInput.type = 'number';
+                creditsInput.className = 'credits';
+                creditsInput.placeholder = 'Credits';
+                creditsInput.min = '0.5';
+                creditsInput.step = '0.5';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.addEventListener('click', () => this.deleteSubject(id));
+
+                row.append(nameInput, gradeSelect, creditsInput, deleteBtn);
+                return row;
+            }
+
+            addSubject() {
+                const row = this.createSubjectRow();
+                this.container.appendChild(row);
+            }
+
+            deleteSubject(id) {
+                const row = this.container.querySelector(`[data-id="${id}"]`);
+                if (row && this.container.children.length > 1) {
+                    row.remove();
+                }
+            }
+
+            updateGradeOptions(select) {
+                select.innerHTML = '';
+                const grades = this.gradingSystem === 'letter' 
+                    ? Object.keys(this.gradePoints)
+                    : ['5', '4', '3', '2'];
+
+                grades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade;
+                    option.textContent = grade;
+                    select.appendChild(option);
+                });
+            }
+
+            changeGradingSystem(e) {
+                const buttons = document.querySelectorAll('.grading-system button');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+
+                this.gradingSystem = e.target.dataset.system;
+                
+                // Update all existing grade selects
+                document.querySelectorAll('.grade').forEach(select => {
+                    this.updateGradeOptions(select);
+                });
+            }
+
+            validateInputs() {
+                const subjects = Array.from(this.container.children);
+                if (subjects.length === 0) {
+                    this.showError('Please add at least one subject');
+                    return false;
+                }
+
+                for (const row of subjects) {
+                    const name = row.querySelector('.subject-name').value.trim();
+                    const credits = parseFloat(row.querySelector('.credits').value);
+
+                    if (!name) {
+                        this.showError('Please enter all subject names');
+                        return false;
+                    }
+
+                    if (!credits || credits <= 0) {
+                        this.showError('Please enter valid credits for all subjects');
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            calculateGPA() {
+                this.hideError();
+                this.hideResult();
+
+                if (!this.validateInputs()) {
+                    return;
+                }
+
+                try {
+                    let totalPoints = 0;
+                    let totalCredits = 0;
+
+                    Array.from(this.container.children).forEach(row => {
+                        const credits = parseFloat(row.querySelector('.credits').value);
+                        const grade = row.querySelector('.grade').value;
+                        
+                        const gradePoint = this.gradingSystem === 'letter' 
+                            ? this.gradePoints[grade]
+                            : parseFloat(grade);
+
+                        totalPoints += credits * gradePoint;
+                        totalCredits += credits;
+                    });
+
+                    if (totalCredits === 0) {
+                        throw new Error('Total credits cannot be zero');
+                    }
+
+                    const gpa = totalPoints / totalCredits;
+                    this.showResult(gpa);
+                } catch (err) {
+                    this.showError('Error calculating GPA');
+                }
+            }
+
+            showResult(gpa) {
+                this.gpaValue.textContent = gpa.toFixed(2);
+                this.resultDiv.classList.add('visible');
+            }
+
+            hideResult() {
+                this.resultDiv.classList.remove('visible');
+            }
+
+            showError(message) {
+                this.errorDiv.textContent = message;
+                this.errorDiv.classList.add('visible');
+            }
+
+            hideError() {
+                this.errorDiv.classList.remove('visible');
+            }
+        }
+
+        // Initialize the calculator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new GPACalculator();
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('uni_searcher');
+            const searchIcon = searchInput.nextElementSibling;
+
+            function performSearch() {
+                const universityName = searchInput.value.trim();
+                if (!universityName) return;
+
+                const formData = new FormData();
+                formData.append('university_name', universityName);
+                formData.append('country', 'global');
+
+                fetch('/search_university', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        alert('Could not find university. Please try another search.');
+                        return;
+                    }
+                    
+                    const modalHtml = `
+                        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 p-4 overflow-y-auto" id="searchModal">
+                            <div class="bg-white rounded-lg max-w-2xl w-full mt-20 mx-auto relative">
+                                <!-- Header - fixed at top -->
+                                <div class="sticky top-0 bg-white p-6 border-b border-gray-200 rounded-t-lg">
+                                    <div class="flex justify-between items-center">
+                                        <h2 class="text-2xl font-bold text-gray-900">${data.universityName || 'University Details'}</h2>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" id="closeSearchModal">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Scrollable content -->
+                                <div class="p-6 overflow-y-auto" style="max-height: calc(80vh - 100px);">
+                                    ${data.imageUrl ? `
+                                        <div class="mb-6">
+                                            <img src="${data.imageUrl}" alt="${data.universityName}" 
+                                                class="w-full h-48 object-cover rounded-lg shadow-md">
+                                        </div>
+                                    ` : ''}
+
+                                    <div class="space-y-6">
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Description</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.description || 'No description available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Notable Programs</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.notablePrograms || 'Information not available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Campus Life</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.campusLife || 'Information not available'}</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Admission Requirements</h3>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">General Requirements</h4>
+                                                    <p class="text-gray-700 leading-relaxed">
+                                                        ${data.admissionRequirements.general || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">GPA Requirement</h4>
+                                                    <p class="text-gray-700">
+                                                        ${data.admissionRequirements.gpa || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">English Language Requirements</h4>
+                                                    <p class="text-gray-700">
+                                                        IELTS: ${data.admissionRequirements.englishRequirements.ielts || 'Information not available'}
+                                                    </p>
+                                                    <p class="text-gray-700 text-sm mt-1">
+                                                        ${data.admissionRequirements.englishRequirements.notes || ''}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-gray-800">Required Documents</h4>
+                                                    <p class="text-gray-700">
+                                                        ${data.admissionRequirements.documents || 'Information not available'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Research Opportunities</h3>
+                                            <p class="text-gray-700 leading-relaxed">${data.researchOpportunities || 'Information not available'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Remove existing modal if it exists
+                    const existingModal = document.getElementById('searchModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Add new modal
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                    // Add scroll styling
+                    document.body.style.overflow = 'hidden';
+
+                    // Add event listeners
+                    const modal = document.getElementById('searchModal');
+                    const closeButton = document.getElementById('closeSearchModal');
+
+                    function closeModal() {
+                        modal.remove();
+                        document.body.style.overflow = '';
+                    }
+
+                    closeButton.addEventListener('click', closeModal);
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            closeModal();
+                        }
+                    });
+
+                    // Prevent closing when clicking inside modal content
+                    modal.querySelector('.bg-white').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error searching for university. Please try again.');
+                });
+            }
+
+            // Add event listeners
+            searchIcon.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

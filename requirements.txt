@@ -1,0 +1,7 @@
+load_dotenv
+google.generativeai
+flask
+requests
+gunicorn
+firebase
+firebase_admin
