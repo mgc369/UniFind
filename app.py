@@ -1113,4 +1113,4 @@ if __name__ == "__main__":
         raise ValueError("Missing Google API key")
     
     # Run the application
-    app.run(debug=True, port=3000)
+    app.run(debug=True, port=10000)
