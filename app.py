@@ -125,7 +125,7 @@ class ResponseFormatter:
             return text
 class UniversityRecommender:
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('models/gemini-1.5-flash')
         self.logger = logging.getLogger(__name__)
 
     def _get_university_image(self, university_name: str, country: str) -> str:
