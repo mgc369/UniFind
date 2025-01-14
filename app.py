@@ -1106,11 +1106,7 @@ if __name__ == "__main__":
     load_dotenv()
     
     # Configure API key
-    api_key = os.getenv('GOOGLE_API_KEY')
-    if api_key:
-        genai.configure(api_key="AIzaSyD5z7jcpdYlzjVKsT6bjWpf-CHj_I1HwsQ")
-    if not os.getenv('GOOGLE_API_KEY'):
-        raise ValueError("Missing Google API key")
+    genai.configure(api_key="AIzaSyD5z7jcpdYlzjVKsT6bjWpf-CHj_I1HwsQ")
     
     # Run the application
     app.run(debug=True, port=10000)
