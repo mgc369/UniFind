@@ -598,15 +598,15 @@ logging.basicConfig(level=logging.INFO)
 recommender = UniversityRecommender()
 response_formatter = ResponseFormatter()
 
-# # Декоратор для проверки аутентификации
-# def login_required(f):
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         auth_cookie = request.cookies.get('firebase_auth')
-#         if not auth_cookie:
-#             return redirect(url_for('login', next=request.url))
-#         return f(*args, **kwargs)
-#     return decorated_function
+# Декоратор для проверки аутентификации
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_cookie = request.cookies.get('firebase_auth')
+        if not auth_cookie:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/login')
 def login():
@@ -623,6 +623,7 @@ def register():
     if auth_cookie:
         return redirect(url_for('index'))
     return render_template('register.html')
+
 @app.route('/user')
 def user_profile():
     """Render the user profile page"""
@@ -635,6 +636,7 @@ def index():
 @app.route('/advisor')
 def advisor():
     return render_template("advisor.html")
+    
 @app.route('/chat', methods=['POST'])
 def chat():
     message = request.form.get('message')
@@ -873,6 +875,7 @@ def calculate_gpa():
     except Exception as e:
         app.logger.error(f'Error calculating GPA: {str(e)}')
         return jsonify({'error': 'An error occurred while calculating GPA'}), 500
+
 
 
 @app.route('/career-advisor')
