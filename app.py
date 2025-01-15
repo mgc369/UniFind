@@ -3,6 +3,7 @@ import os
 import google.generativeai as genai
 from typing import Dict, List, Union
 import json
+from functools import wraps
 import re
 import firebase
 import logging
@@ -599,14 +600,14 @@ recommender = UniversityRecommender()
 response_formatter = ResponseFormatter()
 
 # Декоратор для проверки аутентификации
-def login_required(f):
+"""def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_cookie = request.cookies.get('firebase_auth')
         if not auth_cookie:
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
-    return decorated_function
+    return decorated_function"""
 
 @app.route('/')
 def index():
@@ -615,17 +616,17 @@ def index():
 @app.route('/login')
 def login():
     # Если пользователь уже аутентифицирован, перенаправляем на главную
-    auth_cookie = request.cookies.get('firebase_auth')
+    """auth_cookie = request.cookies.get('firebase_auth')
     if auth_cookie:
-        return redirect(url_for('index'))
+        return redirect(url_for('index'))"""
     return render_template('login.html')
 
 @app.route('/register')
 def register():
     # Если пользователь уже аутентифицирован, перенаправляем на главную
-    auth_cookie = request.cookies.get('firebase_auth')
+    """auth_cookie = request.cookies.get('firebase_auth')
     if auth_cookie:
-        return redirect(url_for('index'))
+        return redirect(url_for('index'))"""
     return render_template('register.html')
 
 @app.route('/user')
