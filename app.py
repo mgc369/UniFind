@@ -608,6 +608,10 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@app.route('/')
+def index():
+    return render_template('mainpage.html')
+
 @app.route('/login')
 def login():
     # Если пользователь уже аутентифицирован, перенаправляем на главную
@@ -628,10 +632,6 @@ def register():
 def user_profile():
     """Render the user profile page"""
     return render_template('user.html')
-
-@app.route('/')
-def index():
-    return render_template('mainpage.html')
 
 @app.route('/advisor')
 def advisor():
