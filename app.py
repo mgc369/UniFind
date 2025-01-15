@@ -616,17 +616,17 @@ def index():
 @app.route('/login')
 def login():
     # Если пользователь уже аутентифицирован, перенаправляем на главную
-    """auth_cookie = request.cookies.get('firebase_auth')
+    auth_cookie = request.cookies.get('firebase_auth')
     if auth_cookie:
-        return redirect(url_for('index'))"""
+        return redirect(url_for('index'))
     return render_template('login.html')
 
 @app.route('/register')
 def register():
     # Если пользователь уже аутентифицирован, перенаправляем на главную
-    """auth_cookie = request.cookies.get('firebase_auth')
+    auth_cookie = request.cookies.get('firebase_auth')
     if auth_cookie:
-        return redirect(url_for('index'))"""
+        return redirect(url_for('index'))
     return render_template('register.html')
 
 @app.route('/user')

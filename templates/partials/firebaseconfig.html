@@ -167,11 +167,11 @@
         window.auth?.onAuthStateChanged(async (user) => {
             console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'No user');
 
-            if (!user) {
+            /*if (!user) {
                 console.log('No user, redirecting to login...');
                 window.location.href = '/login';
                 return;
-            }
+            }*/
 
             try {
                 const userRef = window.db.collection('users').doc(user.uid);
