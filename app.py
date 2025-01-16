@@ -677,6 +677,7 @@ def chat():
             "error": "Failed to generate response",
             "details": str(e)
         }), 500
+            #"response": formatted_response,
 @app.route('/university_details', methods=['POST'])
 def university_details():
     university_name = request.form.get('university_name')

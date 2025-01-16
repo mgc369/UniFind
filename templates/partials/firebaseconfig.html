@@ -172,6 +172,15 @@
                 window.location.href = '/login';
                 return;
             }*/
+            if (user) {
+                gtag('event', 'login', {
+                'method': 'Firebase'
+                });
+                gtag('set', 'user_properties', {
+                'user_id': user.uid,
+                'user_type': 'registered'
+                });
+            }
 
             try {
                 const userRef = window.db.collection('users').doc(user.uid);
