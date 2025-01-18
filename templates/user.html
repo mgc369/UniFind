@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='4366867copy.png') }}" type="image/x-icon">
     <title>UNIFIND AI - Profile</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
@@ -14,6 +15,47 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q12P2LJ41Y"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-Q12P2LJ41Y');
+    </script>
+    <script>
+        // Отслеживание времени на странице
+        gtag('config', 'G-Q12P2LJ41Y', {
+          'custom_map': {
+            'dimension1': 'user_type',
+            'metric1': 'page_time'
+          }
+        });
+      
+        // Отслеживание прокрутки
+        let scrollDepth = 0;
+        window.addEventListener('scroll', function() {
+          let newDepth = Math.round((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100);
+          if (newDepth > scrollDepth) {
+            scrollDepth = newDepth;
+            gtag('event', 'scroll_depth', {
+              'depth': scrollDepth
+            });
+          }
+        });
+      
+        // Отслеживание кликов по важным элементам
+        document.addEventListener('click', function(e) {
+          if (e.target.matches('a, button')) {
+            gtag('event', 'click', {
+              'event_category': 'engagement',
+              'event_label': e.target.textContent
+            });
+          }
+        });
+    </script>
+    <!-- End Google Analytics -->
     <!-- Place this in your head section -->
     <!-- Add this in your head section -->
     <script>
