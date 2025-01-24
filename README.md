@@ -24,8 +24,7 @@ UniGuide is an AI-powered web application designed to help students navigate uni
 ### Steps
 1. Clone repository:
 ```bash
-git clone https://github.com/yourusername/mgc369-uniguide.git
-cd mgc369-uniguide
+git clone https://github.com/mgc369/UniGuide.git
 ```
 
 2. Install Python dependencies:
@@ -61,12 +60,60 @@ App will run on `http://localhost:10000`
 
 ## Project Structure
 ```
-├── app.py                # Main application entry
-├── static/               # CSS/JS assets
-├── templates/            # HTML templates
-├── Procfile              # Heroku deployment config
-├── firebase.json         # Firebase rules
-└── servicekey.json       # Firebase service account key
+Directory structure:
+└── mgc369-uniguide/
+    ├── README.md
+    ├── ProcFile
+    ├── app.py
+    ├── data.html
+    ├── dbrules.json
+    ├── firebase.json
+    ├── package.json
+    ├── requirements.txt
+    ├── .firebaserc
+    ├── images/
+    │   └── DALL·E 2025-01-18 12.43.48 - A minimalist favicon.webp
+    ├── static/
+    │   ├── scripts/
+    │   │   ├── advisor.js
+    │   │   ├── career_advisor.js
+    │   │   ├── gpa_calculator.js
+    │   │   ├── index.js
+    │   │   ├── login.js
+    │   │   ├── mainpage.js
+    │   │   ├── navigation.js
+    │   │   ├── quiz.js
+    │   │   ├── register.js
+    │   │   └── specialty.js
+    │   └── styles/
+    │       ├── advisor.css
+    │       ├── career_advisor.css
+    │       ├── career_path.css
+    │       ├── gpa_calculator.css
+    │       ├── index.css
+    │       ├── login.css
+    │       ├── mainpage.css
+    │       ├── quiz.css
+    │       ├── register.css
+    │       └── specialty.css
+    └── templates/
+        ├── 404.html
+        ├── 500.html
+        ├── advisor.html
+        ├── career_advisor.html
+        ├── career_path.html
+        ├── gpa_calculator.html
+        ├── index.html
+        ├── login.html
+        ├── mainpage.html
+        ├── quiz.html
+        ├── register.html
+        ├── specialty.html
+        ├── user.html
+        └── partials/
+            ├── firebaseconfig.html
+            └── navigation.html
+
 ```
 
 ## Technologies Used
@@ -97,5 +144,3 @@ MIT License
 ---
 
 **Note**: This application is for educational purposes. Always verify university information from official sources.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/yourusername/mgc369-uniguide.git)
