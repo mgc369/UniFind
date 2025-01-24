@@ -1,7 +1,9 @@
 
-# UniGuide - University Guidance Platform
+# UniFind - University Guidance Platform
 
-UniGuide is an AI-powered web application designed to help students navigate university selection, career paths, and academic planning. The platform offers personalized recommendations, GPA calculations, and direct chat with an AI advisor.
+UniFind is an AI-powered web application designed to help students navigate university selection, career paths, and academic planning. The platform offers personalized recommendations, GPA calculations, and direct chat with an AI advisor.
+
+Link to Product Hunt to [support us](https://www.producthunt.com/posts/unifind?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-unifind)
 
 ## Features
 
@@ -24,7 +26,7 @@ UniGuide is an AI-powered web application designed to help students navigate uni
 ### Steps
 1. Clone repository:
 ```bash
-git clone https://github.com/mgc369/UniGuide.git
+git clone https://github.com/mgc369/UniFind.git
 ```
 
 2. Install Python dependencies:
@@ -61,7 +63,7 @@ App will run on `http://localhost:10000`
 ## Project Structure
 ```
 Directory structure:
-└── mgc369-uniguide/
+└── mgc369-unifind/
     ├── README.md
     ├── ProcFile
     ├── app.py
