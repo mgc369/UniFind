@@ -135,7 +135,7 @@ Directory structure:
 5. Submit a pull request
 
 ## License
-MIT License
+[MIT License](LICENSE)
 
 ## Troubleshooting
 - **Missing API Keys**: Ensure all keys are set in `.env`
