@@ -455,7 +455,6 @@
 
         <!-- Replace everything between <script></script> tags with this -->
         <script>
-            // Add this script at the end of your body tag
             document.addEventListener('DOMContentLoaded', async function() {
                 console.log('Document loaded, initializing profile page...');
 
@@ -518,27 +517,48 @@
                         if (!user) throw new Error('User not authenticated');
 
                         try {
-                        const storageRef = firebase.storage().ref();
-                        // Добавляем расширение файла к пути хранения
-                        const fileExtension = file.name.split('.').pop();
-                        const avatarRef = storageRef.child(`avatars/${user.uid}/avatar.${fileExtension}`);
-
-                        const snapshot = await avatarRef.put(file);
-                        const downloadURL = await snapshot.ref.getDownloadURL();
-
-                        // Обновляем документ пользователя
-                        await window.db.collection('users').doc(user.uid).update({
-                            avatarUrl: downloadURL,
-                            lastAvatarUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-
-                        return downloadURL;
+                            // Конвертация файла в Base64
+                            return new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                
+                                reader.onload = async function(e) {
+                                    try {
+                                        const base64String = e.target.result;
+                                        
+                                        // Проверяем размер - если больше 700KB, выводим предупреждение
+                                        if (base64String.length > 700000) {
+                                            console.warn("Аватар слишком большой, рекомендуется изображение меньшего размера");
+                                            // Можно добавить код для сжатия изображения здесь
+                                        }
+                                        
+                                        // Обновляем документ пользователя с Base64 строкой
+                                        await window.db.collection('users').doc(user.uid).update({
+                                            avatarBase64: base64String,
+                                            lastAvatarUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                                        });
+                                        
+                                        console.log("Аватар сохранен в Base64");
+                                        resolve(base64String);
+                                    } catch (error) {
+                                        console.error("Ошибка при сохранении Base64 аватара:", error);
+                                        reject(error);
+                                    }
+                                };
+                                
+                                reader.onerror = function(error) {
+                                    console.error("Ошибка при чтении файла:", error);
+                                    reject(error);
+                                };
+                                
+                                reader.readAsDataURL(file);
+                            });
                         } catch (error) {
-                        console.error('Error uploading avatar:', error);
-                        throw error;
+                            console.error('Ошибка загрузки аватара:', error);
+                            throw error;
                         }
                     }
                 };
+
                 // Activity handling
                 const activityHandler = {
                     async logActivity(description) {
@@ -667,11 +687,11 @@
                         };
                         reader.readAsDataURL(file);
 
-                        // Загружаем файл и обновляем URL в Firebase
-                        const downloadURL = await avatarHandler.upload(file);
+                        // Загружаем и сохраняем в Base64
+                        const base64Data = await avatarHandler.upload(file);
                         
-                        // Обновляем source изображения на актуальный URL
-                        elements.userAvatar.src = downloadURL;
+                        // URL теперь содержит Base64 строку
+                        elements.userAvatar.src = base64Data;
                         
                         // Логируем активность
                         await activityHandler.logActivity('Updated profile picture');
@@ -682,6 +702,9 @@
                     }
                 });
 
+                // Настройка обработчиков для модального окна университета
+                targetHandler.setupModalHandlers();
+
                 // Auth state observer
                 window.auth?.onAuthStateChanged(async (user) => {
                     console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'No user');
@@ -691,24 +714,11 @@
                         return;
                     }
 
-                    
-
                     try {
                         // Get or create user document
                         const userRef = window.db.collection('users').doc(user.uid);
                         let userDoc = await userRef.get();
-                        const userData = userDoc.data();
-
-                        if (userData?.avatarUrl) {
-                            elements.userAvatar.src = userData.avatarUrl;
-                            elements.userAvatar.classList.remove('hidden');
-                            elements.defaultAvatar.classList.add('hidden');
-                        } else {
-                            elements.defaultAvatar.classList.remove('hidden');
-                            elements.userAvatar.classList.add('hidden');
-                        }
-
-
+                        
                         if (!userDoc.exists) {
                             // Создаем новый документ пользователя с email как имя пользователя по умолчанию
                             const defaultUserName = user.email.split('@')[0]; // Берем часть email до @
@@ -720,7 +730,26 @@
                             // Перечитываем документ после создания
                             userDoc = await userRef.get();
                         }
+                        
+                        const userData = userDoc.data();
 
+                        // Проверяем и загружаем аватар - ИСПРАВЛЕНО ЗДЕСЬ
+                        // Сначала проверяем avatarBase64, затем avatarUrl
+                        if (userData.avatarBase64) {
+                            console.log("Загружаем аватар из Base64");
+                            elements.userAvatar.src = userData.avatarBase64;
+                            elements.userAvatar.classList.remove('hidden');
+                            elements.defaultAvatar.classList.add('hidden');
+                        } else if (userData.avatarUrl) {
+                            console.log("Загружаем аватар из URL");
+                            elements.userAvatar.src = userData.avatarUrl;
+                            elements.userAvatar.classList.remove('hidden');
+                            elements.defaultAvatar.classList.add('hidden');
+                        } else {
+                            console.log("Аватар не найден, показываем стандартный");
+                            elements.defaultAvatar.classList.remove('hidden');
+                            elements.userAvatar.classList.add('hidden');
+                        }
 
                         // Убеждаемся, что у нас есть имя пользователя
                         const userName = userData.name || user.displayName || userData.email.split('@')[0];
@@ -732,16 +761,6 @@
 
                         if (userData.createdAt) {
                             elements.joinDate.textContent = `Joined ${helpers.formatDate(userData.createdAt)}`;
-                        }
-
-                        // Проверяем и загружаем аватар
-                        if (userData.avatarUrl) {
-                            elements.userAvatar.src = userData.avatarUrl;
-                            elements.userAvatar.classList.remove('hidden');
-                            elements.defaultAvatar.classList.add('hidden');
-                        } else {
-                            elements.defaultAvatar.classList.remove('hidden');
-                            elements.userAvatar.classList.add('hidden');
                         }
 
                         // Load activities
@@ -759,6 +778,7 @@
                 });
             });
         </script>
+        <script src="{{ url_for('static', filename='scripts/user.js') }}"></script>
 </body>
 
 </html>
