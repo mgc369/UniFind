@@ -575,10 +575,11 @@ class UniversityRecommender:
                 {previous_prompt}
                 
                 Generate the next career guidance question that builds upon previous answers.
-                Make the question more specific and focused on career direction.
+                Make the question more specific and focused on career direction, but at the same time make them short
                 Consider previous responses to make questions more relevant.
                 
-                Format your response exactly as: Question"""
+                """
+                #Format your response exactly as: Question
 
             response = self.model.generate_content(prompt)
             if not response.text:
